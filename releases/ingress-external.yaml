@@ -1,0 +1,30 @@
+---
+apiVersion: flux.weave.works/v1beta1
+kind: HelmRelease
+metadata:
+  name: ingress-external
+  namespace: ingress-controllers
+spec:
+  chart:
+    git: git@github.com:helm/charts
+    ref: master
+    path: stable/nginx-ingress
+  values:
+    name: ingress-external
+    namespace: ingress-controllers
+    controller:
+      replicaCount: 3
+      nodeSelector:
+        kops.k8s.io/app: default
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: release
+                operator: In
+                values:
+                  - ingress-controllers-ingress-external
+            topologyKey: kubernetes.io/hostname
+    rbac:
+      create: true
